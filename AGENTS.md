@@ -111,3 +111,54 @@ Practical checklist for any change impacting core logic or public APIs
 ## Branding / White-labeling note
 
 - For user-facing strings that currently contain "Chatwoot" but should adapt to branded/self-hosted installs, prefer applying `replaceInstallationName` from `shared/composables/useBranding` in the UI layer (for example tooltip and suggestion labels) instead of adding hardcoded brand-specific copy.
+
+## Local Dev — Docker (Appy fork)
+
+This fork is developed in Docker via the existing `docker-compose.yaml` (volume-mounts the working copy at `./:/app:delegated`). A committed `docker-compose.override.yaml` adds `POSTGRES_HOST_AUTH_METHOD=trust` so `pgvector/pg16` accepts the empty default password.
+
+The rails host port is parameterized via `RAILS_HOST_PORT` (default `3000`) — set it in `.env` if you already have something running on 3000.
+
+**One-time setup:**
+1. Copy values from `.env.example` into a new `.env` and fill in:
+   - `SECRET_KEY_BASE` (`openssl rand -hex 64`)
+   - `REDIS_PASSWORD` (any non-empty value)
+   - `INSTALLATION_NAME=Appy Support`
+   - `INSTALLATION_PRICING_PLAN=enterprise`
+   - `INSTALLATION_PRICING_PLAN_QUANTITY=1000`
+   - `APPY_INSTALLATION=true`
+   - `RAILS_HOST_PORT=3001` (or whatever's free on your host)
+2. Build the base image first (rails/vite images depend on it):
+   ```sh
+   docker compose build base
+   docker compose build rails vite
+   ```
+3. `docker compose up -d postgres redis mailhog`
+4. Generate Active Record encryption keys (run with `--no-deps` so the chained services don't start with stale node_modules):
+   ```sh
+   docker compose run --rm --no-deps rails bundle exec rails db:encryption:init
+   ```
+   Paste the three keys into `.env` (`ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT`).
+5. Load the schema (one historical migration references a removed `ActsAsTaggableOn::Taggable::Cache` constant, so `db:schema:load` is the reliable bootstrap):
+   ```sh
+   docker compose run --rm --no-deps rails bundle exec rails db:drop db:create db:schema:load db:seed
+   ```
+
+**Daily:**
+```sh
+docker compose up           # foreground
+docker compose up -d        # background
+docker compose logs -f rails vite
+docker compose down         # stop all
+```
+
+App: `http://localhost:${RAILS_HOST_PORT:-3000}` · Mailhog: `http://localhost:8025` · Vite: `http://localhost:3036`.
+
+**Rails CLI:** use `docker compose exec rails bundle exec rails <cmd>` for running containers, or `docker compose run --rm --no-deps rails bundle exec rails <cmd>` for one-shots (the `--no-deps` flag avoids re-creating sidekiq/vite, which hits a known macOS pnpm-symlink issue when populating fresh node_modules volumes).
+
+### Logo / favicon override
+
+Customer-facing logos live in `public/brand-assets/`. To swap branding:
+- Replace `logo.svg`, `logo_dark.svg`, `logo_thumbnail.svg` with Appy Support equivalents (same filenames, same dimensions).
+- For favicons, replace `public/favicon-*.png` and `public/favicon-badge-*.png`.
+
+Once committed, the next built image picks them up — no code change required.

@@ -1,0 +1,11 @@
+# Appy Support fork — local dev overrides.
+# Auto-merged into docker-compose.yaml when running `docker compose` commands.
+# Keep changes here so upstream syncs of docker-compose.yaml stay conflict-free.
+
+services:
+  postgres:
+    environment:
+      # Upstream compose sets POSTGRES_PASSWORD='' which pgvector/pg16 rejects.
+      # Trust auth is fine for local dev (port binding is on 127.0.0.1 by default).
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
