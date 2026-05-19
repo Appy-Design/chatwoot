@@ -4,11 +4,16 @@ import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import UpgradePage from '../components/UpgradePage.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useMapGetter } from 'dashboard/composables/store.js';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 const route = useRoute();
 const store = useStore();
 const { uiSettings, updateUISettings } = useUISettings();
+const globalConfig = useMapGetter('globalConfig/get');
+const isAppyInstallation = computed(
+  () => !!globalConfig.value?.appyInstallation
+);
 
 const accountId = computed(() => store.getters.getCurrentAccountId);
 const portals = computed(() => store.getters['portals/allPortals']);
@@ -71,6 +76,6 @@ watch(
     >
       <router-view />
     </section>
-    <UpgradePage v-else />
+    <UpgradePage v-else-if="!isAppyInstallation" />
   </div>
 </template>

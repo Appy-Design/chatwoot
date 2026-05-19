@@ -2,12 +2,14 @@
 import { onMounted, computed } from 'vue';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useCaptain } from 'dashboard/composables/useCaptain';
+import { useMapGetter } from 'dashboard/composables/store.js';
 import { useRouter } from 'vue-router';
 
 import Banner from 'dashboard/components-next/banner/Banner.vue';
 
 const router = useRouter();
 const { accountId } = useAccount();
+const globalConfig = useMapGetter('globalConfig/get');
 
 const { responseLimits, fetchLimits } = useCaptain();
 
@@ -19,6 +21,7 @@ const openBilling = () => {
 };
 
 const showBanner = computed(() => {
+  if (globalConfig.value?.appyInstallation) return false;
   if (!responseLimits.value) return false;
 
   const { consumed, totalCount } = responseLimits.value;

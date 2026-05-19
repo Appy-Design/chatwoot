@@ -275,11 +275,11 @@
 
 # ------- Chatwoot Internal Config for Self Hosted ----#
 - name: INSTALLATION_PRICING_PLAN
-  value: 'community'
-  description: 'The pricing plan for the installation, retrieved from the billing API'
+  value: 'enterprise'
+  description: 'The pricing plan for the installation. Appy fork sets this to "enterprise" so plan-gated features (SAML, multi-portal, multi-locale, audio transcription, etc.) are unlocked.'
 - name: INSTALLATION_PRICING_PLAN_QUANTITY
-  value: 0
-  description: 'The number of licenses purchased for the installation, retrieved from the billing API'
+  value: 1000
+  description: 'The number of licenses purchased. Set high in the Appy fork because we are not metering ourselves.'
 - name: CHATWOOT_SUPPORT_WEBSITE_TOKEN
   value:
   description: 'The Chatwoot website token, used to identify the Chatwoot inbox and display the "Contact Support" option on the billing page'

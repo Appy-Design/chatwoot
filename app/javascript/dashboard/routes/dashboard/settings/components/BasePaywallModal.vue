@@ -1,5 +1,7 @@
 <script setup>
+import { computed } from 'vue';
 import { useAdmin } from 'dashboard/composables/useAdmin';
+import { useMapGetter } from 'dashboard/composables/store.js';
 import Icon from 'next/icon/Icon.vue';
 import ButtonV4 from 'next/button/Button.vue';
 
@@ -28,10 +30,15 @@ const emit = defineEmits(['upgrade']);
 // the escalation message instead of a button they cannot use. Mirrors the
 // pattern in UpgradePage.vue.
 const { isAdmin } = useAdmin();
+const globalConfig = useMapGetter('globalConfig/get');
+const isAppyInstallation = computed(
+  () => !!globalConfig.value?.appyInstallation
+);
 </script>
 
 <template>
   <div
+    v-if="!isAppyInstallation"
     class="flex flex-col max-w-md px-6 py-6 border shadow bg-n-solid-1 rounded-xl border-n-weak"
   >
     <div class="flex items-center w-full gap-2 mb-4">
