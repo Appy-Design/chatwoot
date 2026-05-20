@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { debounce } from '@chatwoot/utils';
 import { useMapGetter, useStore } from 'dashboard/composables/store.js';
 import allLocales from 'shared/constants/locales.js';
 import { getArticleStatus } from 'dashboard/helper/portalHelper.js';
@@ -8,8 +10,10 @@ import ArticlesPage from 'dashboard/components-next/HelpCenter/Pages/ArticlePage
 
 const route = useRoute();
 const store = useStore();
+const { t } = useI18n();
 
 const pageNumber = ref(1);
+const searchQuery = ref('');
 
 const allArticles = useMapGetter('articles/allArticles');
 const articlesSortedByPosition = useMapGetter(
@@ -74,12 +78,20 @@ const fetchArticles = ({ pageNumber: pageNumberParam } = {}) => {
     status: status.value,
     authorId: author.value,
     categorySlug: selectedCategorySlug.value,
+    query: searchQuery.value || undefined,
   });
 };
 
 const onPageChange = pageNumberParam => {
   fetchArticles({ pageNumber: pageNumberParam });
 };
+
+const debouncedRefetch = debounce(() => {
+  pageNumber.value = 1;
+  fetchArticles();
+}, 300);
+
+watch(searchQuery, debouncedRefetch);
 
 const fetchPortalAndItsCategories = async locale => {
   await store.dispatch('portals/index');
@@ -100,6 +112,7 @@ watch(
   () => route.params,
   () => {
     pageNumber.value = 1;
+    searchQuery.value = '';
     fetchArticles();
   },
   { deep: true, immediate: true }
@@ -107,7 +120,19 @@ watch(
 </script>
 
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-full flex flex-col">
+    <div
+      v-if="portal"
+      class="flex flex-shrink-0 items-center px-6 pt-4 pb-2 bg-n-background"
+    >
+      <input
+        v-model="searchQuery"
+        type="search"
+        :placeholder="t('HELP_CENTER.SEARCH_ARTICLES.PLACEHOLDER')"
+        :aria-label="t('HELP_CENTER.SEARCH_ARTICLES.PLACEHOLDER')"
+        class="w-full max-w-md rounded-md border border-n-weak bg-n-alpha-1 px-3 py-2 text-sm text-n-slate-12 placeholder-n-slate-10 focus:border-n-brand focus:outline-none"
+      />
+    </div>
     <ArticlesPage
       v-if="portal"
       :articles="articles"
