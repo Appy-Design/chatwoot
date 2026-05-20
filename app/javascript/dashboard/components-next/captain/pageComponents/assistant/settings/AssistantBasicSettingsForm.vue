@@ -23,6 +23,8 @@ const initialState = {
   name: '',
   description: '',
   productName: '',
+  provider: '',
+  modelOverride: '',
   features: {
     conversationFaqs: false,
     memories: false,
@@ -56,6 +58,8 @@ const updateStateFromAssistant = assistant => {
   state.name = assistant.name;
   state.description = assistant.description;
   state.productName = config.product_name;
+  state.provider = assistant.provider || '';
+  state.modelOverride = assistant.model_override || '';
   state.features = {
     conversationFaqs: config.feature_faq || false,
     memories: config.feature_memory || false,
@@ -75,6 +79,8 @@ const handleBasicInfoUpdate = async () => {
   const payload = {
     name: state.name,
     description: state.description,
+    provider: state.provider || null,
+    model_override: state.modelOverride || null,
     config: {
       ...props.assistant.config,
       product_name: state.productName,
@@ -122,6 +128,32 @@ watch(
       :message="formErrors.description"
       :message-type="formErrors.description ? 'error' : 'info'"
       class="z-0"
+    />
+
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-n-slate-12">
+        {{ t('CAPTAIN.ASSISTANTS.FORM.PROVIDER.LABEL') }}
+      </label>
+      <select
+        v-model="state.provider"
+        class="w-full rounded-md border border-n-weak bg-n-alpha-1 px-3 py-2 text-sm text-n-slate-12 focus:border-n-brand focus:outline-none"
+      >
+        <option value="">
+          {{ t('CAPTAIN.ASSISTANTS.FORM.PROVIDER.DEFAULT') }}
+        </option>
+        <option value="openai">
+          {{ t('CAPTAIN.ASSISTANTS.FORM.PROVIDER.OPENAI') }}
+        </option>
+        <option value="anthropic">
+          {{ t('CAPTAIN.ASSISTANTS.FORM.PROVIDER.ANTHROPIC') }}
+        </option>
+      </select>
+    </div>
+
+    <Input
+      v-model="state.modelOverride"
+      :label="t('CAPTAIN.ASSISTANTS.FORM.MODEL.LABEL')"
+      :placeholder="t('CAPTAIN.ASSISTANTS.FORM.MODEL.PLACEHOLDER')"
     />
 
     <div class="flex flex-col gap-2">
