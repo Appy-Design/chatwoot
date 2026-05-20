@@ -32,6 +32,7 @@ export default {
       inboxName: '',
       displayType: CSAT_DISPLAY_TYPES.EMOJI,
       messageContent: '',
+      brandName: window.globalConfig?.BRAND_NAME || 'Chatwoot',
     };
   },
   computed: {
@@ -157,7 +158,12 @@ export default {
       class="flex flex-col w-full h-full bg-n-solid-1 rounded-lg border border-solid border-n-weak shadow-md lg:w-2/5 lg:h-auto"
     >
       <div class="w-full px-12 pt-12 pb-6 m-auto my-0">
-        <img v-if="logo" :src="logo" alt="Chatwoot logo" class="mb-6 logo" />
+        <img
+          v-if="logo"
+          :src="logo"
+          :alt="`${brandName} logo`"
+          class="mb-6 logo"
+        />
         <p
           v-if="!isRatingSubmitted"
           class="mb-8 text-lg leading-relaxed text-n-slate-12"

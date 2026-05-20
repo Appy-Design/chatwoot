@@ -9,4 +9,12 @@ module ApplicationHelper
       hash[feature['name']] = feature['help_url'] if feature['help_url']
     end
   end
+
+  def installation_name
+    Branding::InstallationNameService.installation_name
+  end
+
+  def with_installation_name(text)
+    Branding::InstallationNameService.replace(text)
+  end
 end
