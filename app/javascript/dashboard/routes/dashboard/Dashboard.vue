@@ -8,6 +8,7 @@ import UpgradePage from 'dashboard/routes/dashboard/upgrade/UpgradePage.vue';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useMapGetter } from 'dashboard/composables/store.js';
 import { useWindowSize } from '@vueuse/core';
 
 import wootConstants from 'dashboard/constants/globals';
@@ -44,6 +45,7 @@ export default {
     const { accountId } = useAccount();
     const { width: windowWidth } = useWindowSize();
     const callsStore = useCallsStore();
+    const globalConfig = useMapGetter('globalConfig/get');
 
     return {
       uiSettings,
@@ -51,6 +53,9 @@ export default {
       accountId,
       upgradePageRef,
       windowWidth,
+      isAppyInstallation: computed(
+        () => !!globalConfig.value?.appyInstallation
+      ),
       hasActiveCall: computed(() => callsStore.hasActiveCall),
       hasIncomingCall: computed(() => callsStore.hasIncomingCall),
     };
@@ -71,6 +76,7 @@ export default {
       return this.upgradePageRef?.shouldShowUpgradePage;
     },
     bypassUpgradePage() {
+      if (this.isAppyInstallation) return true;
       return [
         'billing_settings_index',
         'settings_inbox_list',

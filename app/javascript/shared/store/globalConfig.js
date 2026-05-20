@@ -24,6 +24,7 @@ const {
   WIDGET_BRAND_URL: widgetBrandURL,
   DISABLE_USER_PROFILE_UPDATE: disableUserProfileUpdate,
   DEPLOYMENT_ENV: deploymentEnv,
+  APPY_INSTALLATION: appyInstallation,
 } = window.globalConfig || {};
 
 const state = {
@@ -49,6 +50,7 @@ const state = {
   termsURL,
   widgetBrandURL,
   isEnterprise: parseBoolean(isEnterprise),
+  appyInstallation: parseBoolean(appyInstallation),
 };
 
 export const getters = {
