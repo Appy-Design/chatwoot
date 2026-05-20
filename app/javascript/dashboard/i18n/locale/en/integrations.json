@@ -507,6 +507,16 @@
           "PLACEHOLDER": "Enter product name",
           "ERROR": "The product name is required"
         },
+        "PROVIDER": {
+          "LABEL": "AI provider",
+          "DEFAULT": "Use installation default (OpenAI)",
+          "OPENAI": "OpenAI",
+          "ANTHROPIC": "Anthropic (Claude)"
+        },
+        "MODEL": {
+          "LABEL": "Model override (optional)",
+          "PLACEHOLDER": "Leave blank to use installation default"
+        },
         "WELCOME_MESSAGE": {
           "LABEL": "Welcome Message",
           "PLACEHOLDER": "Enter welcome message"

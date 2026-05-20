@@ -6,7 +6,9 @@
 #  config              :jsonb            not null
 #  description         :string
 #  guardrails          :jsonb
+#  model_override      :string
 #  name                :string           not null
+#  provider            :string
 #  response_guidelines :jsonb
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
@@ -15,6 +17,7 @@
 # Indexes
 #
 #  index_captain_assistants_on_account_id  (account_id)
+#  index_captain_assistants_on_provider    (provider)
 #
 class Captain::Assistant < ApplicationRecord
   include Avatarable
@@ -41,6 +44,7 @@ class Captain::Assistant < ApplicationRecord
   validates :name, presence: true
   validates :description, presence: true
   validates :account_id, presence: true
+  validates :provider, inclusion: { in: %w[openai anthropic], allow_nil: true, allow_blank: true }
 
   scope :ordered, -> { order(created_at: :desc) }
 

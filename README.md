@@ -3,6 +3,10 @@
 
 ___
 
+> **Appy Support fork.** This is the [Appy-Design/chatwoot](https://github.com/Appy-Design/chatwoot) fork of upstream [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot). For fork-specific behaviour — branding, Captain multi-provider (OpenAI + Anthropic), help-center admin search, paid-feature unlock, local Docker dev, and the IONOS VPS cutover procedure — see [APPY.md](./APPY.md).
+
+___
+
 # Chatwoot
 
 The modern customer support platform, an open-source alternative to Intercom, Zendesk, Salesforce Service Cloud etc.
