@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_19_201625) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_20_083240) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -346,7 +346,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_19_201625) do
     t.jsonb "config", default: {}, null: false
     t.jsonb "response_guidelines", default: []
     t.jsonb "guardrails", default: []
+    t.string "provider"
+    t.string "model_override"
     t.index ["account_id"], name: "index_captain_assistants_on_account_id"
+    t.index ["provider"], name: "index_captain_assistants_on_provider"
   end
 
   create_table "captain_custom_tools", force: :cascade do |t|

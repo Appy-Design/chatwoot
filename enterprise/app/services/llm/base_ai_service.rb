@@ -3,19 +3,21 @@
 # Base service for LLM operations using RubyLLM.
 # New features should inherit from this class.
 class Llm::BaseAiService
-  DEFAULT_MODEL = Llm::Config::DEFAULT_MODEL
   DEFAULT_TEMPERATURE = 1.0
+  OPENAI_FALLBACK_MODEL = Llm::Config::DEFAULT_MODEL
+  ANTHROPIC_FALLBACK_MODEL = 'claude-sonnet-4-5'.freeze
 
-  attr_reader :model, :temperature
+  attr_reader :model, :temperature, :provider
 
-  def initialize
+  def initialize(assistant: nil)
     Llm::Config.initialize!
-    setup_model
+    @assistant = assistant
+    setup_provider_and_model
     setup_temperature
   end
 
-  def chat(model: @model, temperature: @temperature)
-    RubyLLM.chat(model: model).with_temperature(temperature)
+  def chat(model: @model, temperature: @temperature, provider: @provider)
+    RubyLLM.chat(model: model, provider: provider).with_temperature(temperature)
   end
 
   private
@@ -28,9 +30,18 @@ class Llm::BaseAiService
     response.strip.sub(/\A```(?:\w*)\s*\n?/, '').sub(/\n?\s*```\s*\z/, '').strip
   end
 
-  def setup_model
-    config_value = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value
-    @model = (config_value.presence || DEFAULT_MODEL)
+  def setup_provider_and_model
+    @provider = (@assistant&.provider.presence || 'openai').to_sym
+    @model = @assistant&.model_override.presence || installation_default_model
+  end
+
+  def installation_default_model
+    config_key = @provider == :anthropic ? 'CAPTAIN_ANTHROPIC_MODEL' : 'CAPTAIN_OPEN_AI_MODEL'
+    InstallationConfig.find_by(name: config_key)&.value.presence || fallback_model
+  end
+
+  def fallback_model
+    @provider == :anthropic ? ANTHROPIC_FALLBACK_MODEL : OPENAI_FALLBACK_MODEL
   end
 
   def setup_temperature

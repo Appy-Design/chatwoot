@@ -4,6 +4,8 @@ json.created_at resource.created_at.to_i
 json.description resource.description
 json.guardrails resource.guardrails
 json.id resource.id
+json.model_override resource.model_override
 json.name resource.name
+json.provider resource.provider
 json.response_guidelines resource.response_guidelines
 json.updated_at resource.updated_at.to_i
