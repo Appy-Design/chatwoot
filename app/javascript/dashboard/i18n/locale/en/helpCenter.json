@@ -1,6 +1,10 @@
 {
   "HELP_CENTER": {
     "TITLE": "Help Center",
+    "SEARCH_ARTICLES": {
+      "PLACEHOLDER": "Search articles by title…",
+      "NO_RESULTS": "No articles match this search."
+    },
     "NEW_PAGE": {
       "DESCRIPTION": "Create self-service help center portals for your customers. Help them find answers quickly, without waiting. Streamline inquiries, boost agent efficiency, and elevate customer support.",
       "CREATE_PORTAL_BUTTON": "Create Portal"
