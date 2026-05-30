@@ -9,6 +9,14 @@ json.account_id article.account_id
 json.updated_at article.updated_at.to_i
 json.meta article.meta
 json.tags Array(article.meta&.dig('tags'))
+json.locale article.locale
+json.associated_article_id article.associated_article_id
+
+if article.root_article.present?
+  json.root_article do
+    json.partial! 'api/v1/accounts/articles/associated_article', formats: [:json], article: article.root_article
+  end
+end
 
 json.category do
   json.id article.category_id

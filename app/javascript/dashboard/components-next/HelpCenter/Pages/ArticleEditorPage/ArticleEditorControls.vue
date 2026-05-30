@@ -9,6 +9,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
 import ArticleEditorProperties from 'dashboard/components-next/HelpCenter/Pages/ArticleEditorPage/ArticleEditorProperties.vue';
+import ArticleTranslationLinker from 'dashboard/components-next/HelpCenter/Pages/ArticleEditorPage/ArticleTranslationLinker.vue';
 
 const props = defineProps({
   article: {
@@ -25,6 +26,7 @@ const route = useRoute();
 const openAgentsList = ref(false);
 const openCategoryList = ref(false);
 const openProperties = ref(false);
+const openTranslations = ref(false);
 const selectedAuthorId = ref(null);
 const selectedCategoryId = ref(null);
 
@@ -162,6 +164,19 @@ const updateMeta = meta => {
   emit('saveArticle', { meta });
 };
 
+const linkedTranslationsCount = computed(
+  () => (props.article?.associated_articles || []).length
+);
+
+const linkTranslation = articleId => {
+  emit('saveArticle', { associated_article_id: articleId });
+  openTranslations.value = false;
+};
+
+const unlinkTranslation = () => {
+  emit('saveArticle', { associated_article_id: null });
+};
+
 onMounted(() => {
   if (categorySlugFromRoute.value && isNewArticle.value) {
     // Assign category from slug if there is one
@@ -259,6 +274,33 @@ onMounted(() => {
           class="right-0 z-[100] mt-2 xl:left-0 top-full"
           @save-article="updateMeta"
           @close="openProperties = false"
+        />
+      </OnClickOutside>
+    </div>
+
+    <div class="w-px h-3 bg-n-weak" />
+    <div class="relative">
+      <OnClickOutside @trigger="openTranslations = false">
+        <Button
+          :label="
+            t('HELP_CENTER.EDIT_ARTICLE_PAGE.EDIT_ARTICLE.TRANSLATIONS_LABEL', {
+              count: linkedTranslationsCount,
+            })
+          "
+          icon="i-lucide-languages"
+          variant="ghost"
+          color="slate"
+          :disabled="isNewArticle"
+          class="!px-2 font-normal hover:!bg-transparent hover:!text-n-slate-11"
+          @click="openTranslations = !openTranslations"
+        />
+        <ArticleTranslationLinker
+          v-if="openTranslations"
+          :article="article"
+          class="right-0 z-[100] mt-2 xl:left-0 top-full"
+          @link="linkTranslation"
+          @unlink="unlinkTranslation"
+          @close="openTranslations = false"
         />
       </OnClickOutside>
     </div>
