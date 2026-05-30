@@ -1,4 +1,6 @@
 json.id article.id
+json.slug article.slug
+json.locale article.locale
 json.category_id article.category_id
 json.title article.title
 json.content article.content

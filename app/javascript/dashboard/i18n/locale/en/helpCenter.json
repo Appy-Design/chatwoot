@@ -745,8 +745,20 @@
       },
       "EDIT_ARTICLE": {
         "MORE_PROPERTIES": "More properties",
+        "TRANSLATIONS_LABEL": "Translations ({count})",
         "UNCATEGORIZED": "Uncategorized",
         "EDITOR_PLACEHOLDER": "Write your content here. Type '/' for formatting options."
+      },
+      "TRANSLATIONS": {
+        "TITLE": "Article translations",
+        "LINKED_HEADING": "In this translation group",
+        "NO_LINKED": "No translations linked yet.",
+        "LEAVE_GROUP": "Remove this article from the translation group",
+        "ADD_HEADING": "Link a translation",
+        "PICK_LOCALE": "Pick a locale…",
+        "SEARCH_PLACEHOLDER": "Search by title or slug…",
+        "LOADING": "Loading articles…",
+        "NO_RESULTS": "No matching articles in this locale."
       },
       "ARTICLE_PROPERTIES": {
         "ARTICLE_PROPERTIES": "Article properties",
