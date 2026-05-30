@@ -680,6 +680,14 @@
             "LABEL": "Description",
             "PLACEHOLDER": "Give a short description about the category.",
             "ERROR": "Description is required"
+          },
+          "ICON_PICKER": {
+            "EMOJI_TAB": "Emoji",
+            "LIBRARY_TAB": "Library",
+            "CLEAR": "Clear",
+            "CLEAR_TITLE": "Clear icon",
+            "SEARCH_PLACEHOLDER": "Search icons…",
+            "NO_RESULTS": "No icons match \"{query}\""
           }
         },
         "BUTTONS": {

@@ -66,7 +66,34 @@ const isUpdatingCategory = computed(() => {
   return false;
 });
 
-const isEmojiPickerOpen = ref(false);
+// Appy fork: the marketing site's CategoryIcon component recognises this
+// allowlist of Lucide icon names and renders the matching <LucideIcon /> on
+// the help portal landing. Names match lucide-react's PascalCase exports so
+// the JSON value flows straight into the website without translation. To
+// add a new icon: extend this list AND extend the website's
+// app/components/help/CategoryIcon.tsx ICON_MAP to keep them in sync.
+const LUCIDE_ICONS = Object.freeze([
+  'Bell',
+  'BookOpen',
+  'Code',
+  'Cog',
+  'CreditCard',
+  'HelpCircle',
+  'Plug',
+  'Rocket',
+  'Settings',
+  'Shield',
+  'ShoppingBag',
+  'Star',
+  'Tag',
+  'Users',
+  'Zap',
+]);
+const LUCIDE_SET = new Set(LUCIDE_ICONS);
+const pascalToKebab = name =>
+  name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+const isLucideName = value =>
+  typeof value === 'string' && LUCIDE_SET.has(value);
 
 const state = reactive({
   id: '',
@@ -76,6 +103,26 @@ const state = reactive({
   description: '',
   locale: '',
 });
+
+const isIconPickerOpen = ref(false);
+const iconPickerTab = ref('emoji');
+const lucideSearch = ref('');
+
+const filteredLucideIcons = computed(() => {
+  const q = lucideSearch.value.trim().toLowerCase();
+  if (!q) return LUCIDE_ICONS;
+  return LUCIDE_ICONS.filter(name => name.toLowerCase().includes(q));
+});
+
+const iconButtonIcon = computed(() => {
+  if (isLucideName(state.icon)) return `i-lucide-${pascalToKebab(state.icon)}`;
+  if (state.icon) return '';
+  return 'i-lucide-smile-plus';
+});
+
+const iconButtonLabel = computed(() =>
+  state.icon && !isLucideName(state.icon) ? state.icon : ''
+);
 
 const isEditMode = computed(() => props.mode === 'edit');
 
@@ -111,7 +158,16 @@ const slugHelpText = computed(() => {
 
 const onClickInsertEmoji = emoji => {
   state.icon = emoji;
-  isEmojiPickerOpen.value = false;
+  isIconPickerOpen.value = false;
+};
+
+const pickLucideIcon = name => {
+  state.icon = name;
+  isIconPickerOpen.value = false;
+};
+
+const clearIcon = () => {
+  state.icon = '';
 };
 
 const handleSubmit = async () => {
@@ -195,22 +251,126 @@ defineExpose({ state, isSubmitDisabled });
           custom-input-class="!h-10 ltr:!pl-12 rtl:!pr-12"
         >
           <template #prefix>
-            <OnClickOutside @trigger="isEmojiPickerOpen = false">
+            <OnClickOutside @trigger="isIconPickerOpen = false">
               <Button
-                :label="state.icon"
+                :label="iconButtonLabel"
                 color="slate"
                 size="sm"
                 type="button"
-                :icon="!state.icon ? 'i-lucide-smile-plus' : ''"
+                :icon="iconButtonIcon"
                 class="!h-[2.4rem] !w-[2.375rem] absolute top-[1.94rem] !outline-none !rounded-[0.438rem] border-0 ltr:left-px rtl:right-px ltr:!rounded-r-none rtl:!rounded-l-none"
-                @click="isEmojiPickerOpen = !isEmojiPickerOpen"
+                @click="isIconPickerOpen = !isIconPickerOpen"
               />
-              <EmojiInput
-                v-if="isEmojiPickerOpen"
-                class="left-0 top-16"
-                show-remove-button
-                :on-click="onClickInsertEmoji"
-              />
+              <div
+                v-if="isIconPickerOpen"
+                class="absolute left-0 top-16 z-30 w-72 rounded-xl bg-n-alpha-3 outline outline-1 outline-n-container backdrop-blur-[100px] shadow-lg p-3 flex flex-col gap-3"
+              >
+                <div
+                  class="flex items-center justify-between gap-2 border-b border-n-strong pb-2"
+                >
+                  <div class="flex items-center gap-1">
+                    <button
+                      type="button"
+                      class="text-xs font-medium px-2 py-1 rounded transition-colors"
+                      :class="
+                        iconPickerTab === 'emoji'
+                          ? 'bg-n-alpha-2 text-n-slate-12'
+                          : 'text-n-slate-11 hover:text-n-slate-12'
+                      "
+                      @click="iconPickerTab = 'emoji'"
+                    >
+                      {{
+                        t(
+                          'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.EMOJI_TAB'
+                        )
+                      }}
+                    </button>
+                    <button
+                      type="button"
+                      class="text-xs font-medium px-2 py-1 rounded transition-colors"
+                      :class="
+                        iconPickerTab === 'lucide'
+                          ? 'bg-n-alpha-2 text-n-slate-12'
+                          : 'text-n-slate-11 hover:text-n-slate-12'
+                      "
+                      @click="iconPickerTab = 'lucide'"
+                    >
+                      {{
+                        t(
+                          'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.LIBRARY_TAB'
+                        )
+                      }}
+                    </button>
+                  </div>
+                  <button
+                    v-if="state.icon"
+                    type="button"
+                    :title="
+                      t(
+                        'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.CLEAR_TITLE'
+                      )
+                    "
+                    class="text-xs text-n-slate-11 hover:text-n-slate-12 px-2 py-1 rounded hover:bg-n-alpha-2"
+                    @click="clearIcon"
+                  >
+                    {{
+                      t(
+                        'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.CLEAR'
+                      )
+                    }}
+                  </button>
+                </div>
+                <EmojiInput
+                  v-if="iconPickerTab === 'emoji'"
+                  class="!static !shadow-none !border-0 !bg-transparent !p-0"
+                  show-remove-button
+                  :on-click="onClickInsertEmoji"
+                />
+                <div v-else class="flex flex-col gap-2">
+                  <input
+                    v-model="lucideSearch"
+                    type="search"
+                    :placeholder="
+                      t(
+                        'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.SEARCH_PLACEHOLDER'
+                      )
+                    "
+                    class="w-full h-8 rounded-md border border-n-strong bg-transparent px-2 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:border-n-brand"
+                  />
+                  <div
+                    class="grid grid-cols-5 gap-1 max-h-[14rem] overflow-y-auto"
+                  >
+                    <button
+                      v-for="name in filteredLucideIcons"
+                      :key="name"
+                      type="button"
+                      :title="name"
+                      class="flex items-center justify-center h-10 w-10 rounded hover:bg-n-alpha-2 transition-colors"
+                      :class="
+                        state.icon === name
+                          ? 'bg-n-alpha-2 text-n-brand'
+                          : 'text-n-slate-12'
+                      "
+                      @click="pickLucideIcon(name)"
+                    >
+                      <span
+                        :class="`i-lucide-${pascalToKebab(name)} text-lg`"
+                      />
+                    </button>
+                    <div
+                      v-if="filteredLucideIcons.length === 0"
+                      class="col-span-5 text-xs text-n-slate-11 text-center py-3"
+                    >
+                      {{
+                        t(
+                          'HELP_CENTER.CATEGORY_PAGE.CATEGORY_DIALOG.FORM.ICON_PICKER.NO_RESULTS',
+                          { query: lucideSearch }
+                        )
+                      }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </OnClickOutside>
           </template>
         </Input>
