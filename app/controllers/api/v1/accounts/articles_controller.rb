@@ -1,8 +1,28 @@
 class Api::V1::Accounts::ArticlesController < Api::V1::Accounts::BaseController
   before_action :portal
   before_action :check_authorization
-  before_action :fetch_article, except: [:index, :create, :reorder]
+  before_action :fetch_article, except: [:index, :create, :reorder, :translate_text]
   before_action :set_current_page, only: [:index]
+
+  # Appy fork: lightweight on-demand translation of a single string used by
+  # the translation-linker picker so ops can read non-English titles.
+  # Distinct from the (currently stubbed) bulk_actions#translate which is
+  # meant for whole-article translations.
+  def translate_text
+    text = params[:text].to_s
+    target_locale = params[:target_locale].to_s
+    return render json: { error: 'text and target_locale are required' }, status: :unprocessable_entity if text.blank? || target_locale.blank?
+
+    translated = Llm::ArticleTitleTranslationService.new.call(
+      text: text,
+      target_locale: target_locale,
+      source_locale: params[:source_locale].presence
+    )
+    render json: { translated_text: translated }
+  rescue StandardError => e
+    Rails.logger.error("ArticleTitleTranslationService failed: #{e.class}: #{e.message}")
+    render json: { error: 'translation_failed' }, status: :service_unavailable
+  end
 
   def index
     @portal_articles = @portal.articles
