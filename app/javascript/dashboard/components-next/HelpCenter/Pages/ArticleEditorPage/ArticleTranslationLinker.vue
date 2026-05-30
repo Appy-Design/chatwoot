@@ -25,17 +25,22 @@ const portalBySlug = useMapGetter('portals/portalBySlug');
 const portal = computed(() => portalBySlug.value(route.params.portalSlug));
 
 // Translations form a group rooted at one article. Viewing the root gives
-// us `associated_articles`; viewing a sibling gives us `root_article` plus
+// us `associatedArticles`; viewing a sibling gives us `rootArticle` plus
 // its other siblings (which we can't reach from this article alone — we
 // only know the root). So we render whatever siblings we can see and let
 // ops navigate to the root if they need the full group.
+//
+// Article shape note: the store applies camelcaseKeys() to every API
+// payload, so OUTER keys here are camelCase even though the API itself
+// returns snake_case. Inner keys (e.g. `a.locale`, `a.title`) are single
+// words and look the same either way.
 const linkedTranslations = computed(() => {
   const own = props.article.id;
   const list = [
-    props.article.root_article,
-    ...(props.article.associated_articles || []),
+    props.article.rootArticle,
+    ...(props.article.associatedArticles || []),
   ].filter(a => a && a.id !== own);
-  // De-dup by id (root_article may also appear inside associated_articles
+  // De-dup by id (rootArticle may also appear inside associatedArticles
   // depending on serializer order).
   const seen = new Set();
   return list.filter(a => {
@@ -45,9 +50,7 @@ const linkedTranslations = computed(() => {
   });
 });
 
-const isTranslationOfRoot = computed(
-  () => !!props.article.associated_article_id
-);
+const isTranslationOfRoot = computed(() => !!props.article.associatedArticleId);
 
 // "Other locales" = portal locales minus the current article's own locale.
 const otherLocales = computed(() => {
@@ -167,6 +170,10 @@ const translationFor = a => {
   return v && v !== 'loading' ? v : '';
 };
 const isTranslating = a => translationState(a) === 'loading';
+
+const onLinkClick = a => {
+  emit('link', a?.id);
+};
 </script>
 
 <template>
@@ -273,7 +280,7 @@ const isTranslating = a => translationState(a) === 'loading';
           :key="a.id"
           type="button"
           class="flex flex-col items-start w-full gap-0.5 px-2 py-1.5 text-left hover:bg-n-alpha-2"
-          @click="emit('link', a.id)"
+          @click="onLinkClick(a)"
         >
           <span class="w-full text-sm truncate text-n-slate-12">
             {{ a.title || a.slug }}

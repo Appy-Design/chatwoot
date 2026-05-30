@@ -164,9 +164,14 @@ const updateMeta = meta => {
   emit('saveArticle', { meta });
 };
 
-const linkedTranslationsCount = computed(
-  () => (props.article?.associated_articles || []).length
-);
+// Count the linked translations. Store applies camelcaseKeys to API
+// payloads, so the property name here is camelCase even though it's
+// snake_case in the Rails response.
+const linkedTranslationsCount = computed(() => {
+  const linked = props.article?.associatedArticles || [];
+  const hasRoot = !!props.article?.rootArticle;
+  return linked.length + (hasRoot ? 1 : 0);
+});
 
 const linkTranslation = articleId => {
   emit('saveArticle', { associated_article_id: articleId });
