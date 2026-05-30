@@ -758,7 +758,8 @@
         "PICK_LOCALE": "Pick a locale…",
         "SEARCH_PLACEHOLDER": "Search by title or slug…",
         "LOADING": "Loading articles…",
-        "NO_RESULTS": "No matching articles in this locale."
+        "NO_RESULTS": "No matching articles in this locale.",
+        "TRANSLATING": "Translating…"
       },
       "ARTICLE_PROPERTIES": {
         "ARTICLE_PROPERTIES": "Article properties",

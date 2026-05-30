@@ -75,6 +75,17 @@ class ArticlesAPI extends PortalsAPI {
     });
   }
 
+  // Appy fork: translate a single string (typically an article title) via the
+  // configured Captain LLM provider. Used by the translation-linker picker to
+  // surface an English hint next to non-English article titles.
+  translateText({ portalSlug, text, targetLocale, sourceLocale }) {
+    return axios.post(`${this.url}/${portalSlug}/articles/translate_text`, {
+      text,
+      target_locale: targetLocale,
+      source_locale: sourceLocale,
+    });
+  }
+
   bulkTranslate({ portalSlug, articleIds, locale, categoryId, force = false }) {
     return axios.post(
       `${this.url}/${portalSlug}/articles/bulk_actions/translate`,

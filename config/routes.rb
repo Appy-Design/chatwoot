@@ -367,6 +367,7 @@ Rails.application.routes.draw do
             end
             resources :articles do
               post :reorder, on: :collection
+              post :translate_text, on: :collection
             end
           end
 

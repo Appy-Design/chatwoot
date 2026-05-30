@@ -112,6 +112,61 @@ const truncate = (s, n) => {
   if (!s) return '';
   return s.length > n ? `${s.slice(0, n)}…` : s;
 };
+
+// Per-article-id cache so we don't re-translate the same title every render.
+// Three states: undefined (not requested), 'loading', '<translated string>'.
+// '' (empty string) means translation returned nothing or failed silently —
+// fall back to slug+description for the secondary hint in that case.
+const translationCache = ref({});
+const opsUiLocale = computed(() => {
+  // Locale of the admin UI: the closest signal we have for "the language the
+  // ops user actually reads". en is the only locale Chatwoot ships English-
+  // -labelled keys for, so we treat anything with a different lang prefix as
+  // needing a translation hint.
+  const navLang =
+    (typeof navigator !== 'undefined' && navigator.language) || 'en';
+  return navLang.split('-')[0];
+});
+
+const needsTranslation = a => {
+  if (!a) return false;
+  const targetLang = (a.locale || '').split('-')[0];
+  return targetLang && targetLang !== opsUiLocale.value;
+};
+
+const requestTranslation = async a => {
+  if (!a || !needsTranslation(a) || !portal.value) return;
+  if (translationCache.value[a.id] !== undefined) return;
+  translationCache.value[a.id] = 'loading';
+  try {
+    const response = await ArticlesAPI.translateText({
+      portalSlug: portal.value.slug,
+      text: a.title || a.slug || '',
+      targetLocale: opsUiLocale.value,
+      sourceLocale: a.locale,
+    });
+    translationCache.value[a.id] =
+      (response.data?.translated_text || '').trim() || '';
+  } catch {
+    translationCache.value[a.id] = '';
+  }
+};
+
+// Fire translation requests in the background as the visible-row list
+// changes. Cheap because each call short-circuits when cached.
+watch(filteredArticles, list => list.forEach(requestTranslation), {
+  immediate: true,
+});
+watch(linkedTranslations, list => list.forEach(requestTranslation), {
+  immediate: true,
+});
+
+const translationState = a => translationCache.value[a.id];
+const translationFor = a => {
+  const v = translationState(a);
+  return v && v !== 'loading' ? v : '';
+};
+const isTranslating = a => translationState(a) === 'loading';
 </script>
 
 <template>
@@ -144,6 +199,18 @@ const truncate = (s, n) => {
           <div class="flex-1 min-w-0">
             <div class="text-sm truncate text-n-slate-12">
               {{ a.title || a.slug }}
+            </div>
+            <div
+              v-if="translationFor(a)"
+              class="text-xs italic truncate text-n-slate-11"
+            >
+              {{ translationFor(a) }}
+            </div>
+            <div
+              v-else-if="isTranslating(a)"
+              class="text-xs italic text-n-slate-10"
+            >
+              {{ t('HELP_CENTER.EDIT_ARTICLE_PAGE.TRANSLATIONS.TRANSLATING') }}
             </div>
             <div class="text-xs text-n-slate-10">
               {{ localeLabel(a.locale) }}{{ a.slug ? ` · ${a.slug}` : '' }}
@@ -210,6 +277,18 @@ const truncate = (s, n) => {
         >
           <span class="w-full text-sm truncate text-n-slate-12">
             {{ a.title || a.slug }}
+          </span>
+          <span
+            v-if="translationFor(a)"
+            class="w-full text-xs italic truncate text-n-slate-11"
+          >
+            {{ translationFor(a) }}
+          </span>
+          <span
+            v-else-if="isTranslating(a)"
+            class="w-full text-xs italic text-n-slate-10"
+          >
+            {{ t('HELP_CENTER.EDIT_ARTICLE_PAGE.TRANSLATIONS.TRANSLATING') }}
           </span>
           <span class="w-full text-xs truncate text-n-slate-10">
             {{ a.slug
