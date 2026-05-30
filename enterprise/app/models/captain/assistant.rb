@@ -44,7 +44,7 @@ class Captain::Assistant < ApplicationRecord
   validates :name, presence: true
   validates :description, presence: true
   validates :account_id, presence: true
-  validates :provider, inclusion: { in: %w[openai anthropic], allow_nil: true, allow_blank: true }
+  validates :provider, inclusion: { in: %w[openai anthropic], allow_blank: true }
 
   scope :ordered, -> { order(created_at: :desc) }
 
