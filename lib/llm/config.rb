@@ -41,16 +41,31 @@ module Llm::Config
       end
     end
 
+    # Appy fork: each lookup tries the InstallationConfig DB row first
+    # (Super Admin → App Configs), then the CAPTAIN_* env var (matches
+    # APPY.md), then RubyLLM's native env names (so a single
+    # OPENAI_API_KEY / ANTHROPIC_API_KEY also works).
+    #
+    # Without this chain, ENV-only configuration was silently ignored —
+    # configure_ruby_llm above only sets values that resolve here, and the
+    # legacy Captain code paths (Copilot, FAQ generator, Memory) go
+    # through this initializer, not the newer RubyLLM-native auto-config.
     def system_api_key
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value.presence ||
+        ENV['CAPTAIN_OPEN_AI_API_KEY'].presence ||
+        ENV.fetch('OPENAI_API_KEY', nil).presence
     end
 
     def openai_endpoint
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence ||
+        ENV['CAPTAIN_OPEN_AI_ENDPOINT'].presence ||
+        ENV.fetch('OPENAI_API_BASE', nil).presence
     end
 
     def anthropic_api_key
-      InstallationConfig.find_by(name: 'CAPTAIN_ANTHROPIC_API_KEY')&.value
+      InstallationConfig.find_by(name: 'CAPTAIN_ANTHROPIC_API_KEY')&.value.presence ||
+        ENV['CAPTAIN_ANTHROPIC_API_KEY'].presence ||
+        ENV.fetch('ANTHROPIC_API_KEY', nil).presence
     end
   end
 end
