@@ -5,7 +5,7 @@
 class Llm::BaseAiService
   DEFAULT_TEMPERATURE = 1.0
   OPENAI_FALLBACK_MODEL = Llm::Config::DEFAULT_MODEL
-  ANTHROPIC_FALLBACK_MODEL = 'claude-sonnet-4-5'.freeze
+  ANTHROPIC_FALLBACK_MODEL = 'claude-sonnet-4-5'
 
   attr_reader :model, :temperature, :provider
 
